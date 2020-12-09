@@ -67,4 +67,24 @@ describe('app.js tests', () => {
     expect(response.body).toEqual(sauce);
   });
 
+
+  it('removes one sauce with delete', async() => {
+    const sauce = await Sauce.insert({ color: 'yellow', type: 'mustard' });
+
+    const response = await request(app)
+      .delete(`/api/v1/sauce/${sauce.id}`)
+      .send({
+        color: 'yellow', 
+        type: 'mustard'
+      });
+
+    expect(response.body).toEqual({
+      id: '1',
+      color: 'red',
+      type: 'garlic'
+    });
+  });
+
+
+
 });
