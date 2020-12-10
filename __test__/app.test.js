@@ -1,10 +1,11 @@
 const request = require('supertest');
-const fs = require('fs').promises;
+const fs = require('fs');
 const app = require('../lib/app');
 const pool = require('../lib/utils/pool');
 const Sauce = require('../lib/models/Sauce');
 
 describe('app.js tests', () => {
+
   beforeEach(() => {
     return pool.query(fs.readFileSync('./data/setup.sql', 'utf-8'));
   });
@@ -12,7 +13,6 @@ describe('app.js tests', () => {
   afterAll(() => {
     return pool.end();
   });
-
 
   it('creates a sauce via post', async() => {
     const response = await request(app)
@@ -22,8 +22,8 @@ describe('app.js tests', () => {
         type: 'garlic'
       });
 
-    expect(response).toEqual({
-      id: 1,
+    expect(response.body).toEqual({
+      id: '1',
       color: 'red',
       type: 'garlic'
     });
@@ -31,7 +31,10 @@ describe('app.js tests', () => {
 
     
   it('updates a sauce with put', async() => {
-    const sauce = await Sauce.insert({ color: 'yellow', type: 'mustard' });
+    const sauce = await Sauce.insert({ 
+      color: 'yellow', 
+      type: 'mustard' 
+    });
 
     const response = await request(app)
       .put(`/api/v1/sauce/${sauce.id}`)
@@ -48,14 +51,15 @@ describe('app.js tests', () => {
   });
 
   it('returns all sauces with get', async() => {
+    const sauce = await Sauce.insert({ 
+      color: 'red', 
+      type: 'garlic' 
+    });
+
     const response = await request(app)
       .get('/api/v1/sauce');
 
-    expect(response.body).toEqual([{
-      id: 1,
-      color: 'red',
-      type: 'garlic'
-    }]);
+    expect(response.body).toEqual([sauce]);
   });
 
   it('returns one sauce with get', async() => {
@@ -72,16 +76,12 @@ describe('app.js tests', () => {
     const sauce = await Sauce.insert({ color: 'yellow', type: 'mustard' });
 
     const response = await request(app)
-      .delete(`/api/v1/sauce/${sauce.id}`)
-      .send({
-        color: 'yellow', 
-        type: 'mustard'
-      });
+      .delete(`/api/v1/sauce/${sauce.id}`);
 
     expect(response.body).toEqual({
       id: '1',
-      color: 'red',
-      type: 'garlic'
+      color: 'yellow',
+      type: 'mustard'
     });
   });
 
